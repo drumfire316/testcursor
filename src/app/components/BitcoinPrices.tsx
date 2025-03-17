@@ -8,6 +8,7 @@ interface PriceData {
   last_trade: string;
   bid: string;
   ask: string;
+  timestamp: number;
 }
 
 export default function BitcoinPrices() {
@@ -18,57 +19,60 @@ export default function BitcoinPrices() {
 
   const fetchPrices = async () => {
     try {
-      const [lunoRes, altcointraderRes, valrRes] = await Promise.all([
-        fetch('/api/luno/price'),
-        fetch('/api/altcointrader/price'),
-        fetch('/api/valor/price')
+      console.log('Fetching prices...');
+      const [lunoData, altcoinTraderData, valorData] = await Promise.all([
+        fetch('/api/luno/price').then(res => res.json()),
+        fetch('/api/altcointrader/price').then(res => res.json()),
+        fetch('/api/valor/price').then(res => res.json())
       ]);
 
-      if (!lunoRes.ok || !altcointraderRes.ok || !valrRes.ok) {
-        throw new Error('Failed to fetch prices');
-      }
-
-      const [lunoData, altcointraderData, valrData] = await Promise.all([
-        lunoRes.json(),
-        altcointraderRes.json(),
-        valrRes.json()
-      ]);
-
-      console.log('Luno Data:', lunoData);
-      console.log('AltcoinTrader Data:', altcointraderData);
-      console.log('VALR Data:', valrData);
+      console.log('Received data:', { lunoData, altcoinTraderData, valorData });
 
       // Extract price data from API responses
       if (lunoData && lunoData.data && lunoData.data[0]) {
         setLunoPrice({
           last_trade: lunoData.data[0].last_trade,
           bid: lunoData.data[0].bid,
-          ask: lunoData.data[0].ask
+          ask: lunoData.data[0].ask,
+          timestamp: lunoData.data[0].timestamp
         });
       }
 
       // AltcoinTrader data is in a data array
-      if (altcointraderData && altcointraderData.data && altcointraderData.data[0]) {
-        setAltcointraderPrice(altcointraderData.data[0]);
+      if (altcoinTraderData && altcoinTraderData.data && altcoinTraderData.data[0]) {
+        setAltcointraderPrice({
+          last_trade: altcoinTraderData.data[0].last_trade,
+          bid: altcoinTraderData.data[0].bid,
+          ask: altcoinTraderData.data[0].ask,
+          timestamp: altcoinTraderData.data[0].timestamp
+        });
       }
 
       // VALR data is already in the correct format
-      if (valrData && valrData.data && valrData.data[0]) {
-        setValrPrice(valrData.data[0]);
+      if (valorData && valorData.data && valorData.data[0]) {
+        setValrPrice({
+          last_trade: valorData.data[0].last_trade,
+          bid: valorData.data[0].bid,
+          ask: valorData.data[0].ask,
+          timestamp: valorData.data[0].timestamp
+        });
       }
 
       setError(null);
-    } catch (err) {
+      console.log('Updated prices state');
+    } catch (error) {
       setError('Failed to fetch prices. Please try again later.');
-      console.error('Error fetching prices:', err);
+      console.error('Error fetching prices:', error);
     }
   };
 
   useEffect(() => {
     fetchPrices();
-    const interval = setInterval(fetchPrices, 60000); // Update every minute
+    const interval = setInterval(fetchPrices, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  console.log('Current prices state:', { lunoPrice, altcointraderPrice, valrPrice });
 
   if (error) {
     return (
