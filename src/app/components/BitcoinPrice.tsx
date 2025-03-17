@@ -13,12 +13,24 @@ interface BitcoinPriceProps {
 export default function BitcoinPrice({ exchange, price }: BitcoinPriceProps) {
   console.log(`Rendering ${exchange} price component with data:`, price);
   
+  // Define trading URLs for each exchange
+  const tradingUrls = {
+    Luno: 'https://www.luno.com/trade/BTCZAR',
+    AltcoinTrader: 'https://www.altcointrader.co.za/trade/BTCZAR',
+    VALR: 'https://www.valr.com/exchange/BTC/ZAR'
+  };
+
   if (!price) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <a 
+        href={tradingUrls[exchange as keyof typeof tradingUrls]} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="block bg-white rounded-lg shadow-md p-6 border-2 border-transparent transition-all duration-200 hover:shadow-lg hover:border-blue-500 cursor-pointer"
+      >
         <h2 className="text-xl font-semibold mb-4">{exchange}</h2>
         <p className="text-gray-500">No price data available</p>
-      </div>
+      </a>
     );
   }
 
@@ -29,17 +41,27 @@ export default function BitcoinPrice({ exchange, price }: BitcoinPriceProps) {
   if (isNaN(lastTrade) || isNaN(bid) || isNaN(ask)) {
     console.error('Invalid price data:', price);
     return (
-      <div className="p-4 bg-white rounded-lg shadow-md">
+      <a 
+        href={tradingUrls[exchange as keyof typeof tradingUrls]} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="block p-4 bg-white rounded-lg shadow-md border-2 border-transparent transition-all duration-200 hover:shadow-lg hover:border-blue-500 cursor-pointer"
+      >
         <h3 className="text-lg font-semibold mb-2">{exchange}</h3>
         <p className="text-red-500">Invalid price data</p>
-      </div>
+      </a>
     );
   }
 
   const lastUpdate = price.timestamp ? new Date(price.timestamp).toLocaleTimeString() : 'Just now';
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
+    <a 
+      href={tradingUrls[exchange as keyof typeof tradingUrls]} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="block p-4 bg-white rounded-lg shadow-md border-2 border-transparent transition-all duration-200 hover:shadow-lg hover:border-blue-500 cursor-pointer"
+    >
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-semibold">{exchange}</h3>
         <span className="text-xs text-gray-500">Updated: {lastUpdate}</span>
@@ -66,6 +88,6 @@ export default function BitcoinPrice({ exchange, price }: BitcoinPriceProps) {
           </div>
         </div>
       </div>
-    </div>
+    </a>
   );
 } 
